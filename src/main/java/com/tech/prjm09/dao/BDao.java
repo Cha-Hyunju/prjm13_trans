@@ -183,13 +183,18 @@ public class BDao {
 
 	public void reply(String bid,String bname,String btitle, String bcontent,String bgroup,String bstep,String bindent) {
 		//transaction
-		replyShape(bgroup,bstep);
+		//transaction
 		
-		Connection conn=null;
+//		Connection conn=null;
 		PreparedStatement pstmt=null;
 		
 		try {
 			conn=DBCon.getConnection();
+//			autocommit 변경
+			conn.setAutoCommit(false);  //자동 커밋해제
+			
+			
+			replyShape(bgroup,bstep,conn);
 			String query="insert into replyboard(bid,bname,btitle,bcontent,bgroup,bstep,bindent)\r\n"
 					+ "VALUES(replyboard_seq.nextval,?,?,?,?,?,?)";
 			pstmt=conn.prepareStatement(query);
@@ -245,23 +250,26 @@ public BDto reply_View(String sbid) {
 	}
 
 
-	public void replyShape(String strgroup, String strstep) {
+	public int replyShape(String strgroup, String strstep,Connection tracon) {
 		PreparedStatement pstmt=null;
+		int rn=0;
 		
 		try {
-			conn=DBCon.getConnection();
+//			conn=DBCon.getConnection();
 			String query="update replyboard set bstep=bstep+1 where bgroup=? and bstep>?";
-			pstmt=conn.prepareStatement(query);
+			pstmt=tracon.prepareStatement(query);
 			pstmt.setInt(1, Integer.parseInt(strgroup));
 			pstmt.setInt(2, Integer.parseInt(strstep));			
-			int rn=pstmt.executeUpdate();
+			rn=pstmt.executeUpdate();
 			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally {
 			try {
-			 if(pstmt!=null) {pstmt.close();} if(conn!=null) {conn.close();}} catch (Exception e2) {}}			
+			 if(pstmt!=null) {pstmt.close();} /*if(conn!=null) {conn.close();}*/} catch (Exception e2) {}}		
+		
+		return rn;
 	}
 	
 
